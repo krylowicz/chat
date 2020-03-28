@@ -1,5 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import io from 'socket.io-client';
 
-const Root = () => <h1>hello world</h1>;
+let socket;
+
+const Root = () => {
+  useEffect(() => {
+    socket = io('http://localhost:5000')
+  });
+
+  return (
+    <h1>hello world</h1>
+  )
+};
 
 export default Root;
