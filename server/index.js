@@ -5,6 +5,7 @@ const io = require('socket.io')(server);
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const router = require('./routes/router');
+const cors = require('cors');
 const authRoute = require('./routes/auth');
 
 dotenv.config();
@@ -17,10 +18,17 @@ mongoose.connect(
   () => console.log('connected to database')
 );
 
-io.on('connection', socket => {
+io.on('connect', socket => {
   console.log('connected sockets', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('user has left');
+  })
 });
 
+app.use(cors({
+  origin: '*'
+}));
 app.use(express.json());
 app.use(router);
 app.use('/api/auth', authRoute);

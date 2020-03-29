@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import io from 'socket.io-client';
+import Register from "./components/Register/Register";
 
 let socket;
 
@@ -9,7 +10,7 @@ const Root = () => {
   });
 
   return (
-    <h1>hello world</h1>
+    <Register />
   )
 };
 
