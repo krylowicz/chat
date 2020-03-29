@@ -8,7 +8,7 @@ const LogoutButton = () => {
     try {
       e.preventDefault();
       await localStorage.removeItem('token');
-      history.push('/');
+      history.push('/login');
       console.log(localStorage.getItem('token'));
     } catch (error) {
       console.error(error);

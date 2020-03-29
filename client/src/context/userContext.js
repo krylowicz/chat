@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from "react-router-dom";
 import PropTypes from 'prop-types';
 
 const UserContext = createContext(null);
@@ -8,16 +8,19 @@ const UserContextProvider = ({ children }) => {
   const [user, setUser] = useState(undefined);
   const history = useHistory();
 
-  const handleAuth = async (e, authType, name, password) => {
-    e.preventDefault();
+  const handleAuth = async (authType, name, password) => {
     const response = await fetch(`${process.env.REACT_APP_BASE_URL}/${authType}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, password }),
     });
-    const { token } = await response.json();
-    localStorage.setItem('token', token);
-    history.push('/main');
+    const { token, error } = await response.json();
+    if (error) {
+      return error;
+    } else {
+      localStorage.setItem('token', token);
+      history.push('/');
+    }
   };
 
   const doUpdateToken = () => setUser(undefined);
@@ -38,7 +41,7 @@ UserContextProvider.propTypes = {
   children: PropTypes.object.isRequired,
 };
 
-export const useAuthorization = condition => {
+const useAuthorization = condition => {
   const { user } = useContext(UserContext);
   const history = useHistory();
 
@@ -57,4 +60,5 @@ useAuthorization.propTypes = {
   condition: PropTypes.func.isRequired
 };
 
-export default UserContextProvider;
+export default UserContext;
+export { UserContextProvider, useAuthorization };

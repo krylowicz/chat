@@ -1,15 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import LogoutButton from "../LogoutButton/LogoutButton";
+import { useAuthorization } from "context/userContext";
 
 const Main = () => {
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log(token);
-  });
+  const { user, loading } = useAuthorization(user => user);
 
-  return (
-    <LogoutButton/>
-  )
+  return !loading && user ? <LogoutButton/> : null;
 };
 
 export default Main;

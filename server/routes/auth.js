@@ -8,7 +8,7 @@ router.post('/register', async (req, res) => {
   const { name, password } = req.body;
 
   const { error } = authValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send({ error: error.details[0].message });
 
   const nameExist = await User.findOne({ name });
   if (nameExist) return res.status(400).send('name is arleady in use');
@@ -18,9 +18,11 @@ router.post('/register', async (req, res) => {
 
   const user = new User({ name, password: hashedPasword });
 
+  const token = jwt.sign({ _id: user._id, name, password }, process.env.SECRET);
+
   try {
     await user.save();
-    res.send({ user: user._id });
+    await res.header('authToken', token).send({ token, user: { name } });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -30,7 +32,7 @@ router.post('/login', async (req, res) => {
   const { name, password } = req.body;
 
   const { error } = authValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send({ error: error.details[0].message });
 
   const user = await User.findOne({ name });
   if (!user) return res.status(400).send('invalid name or password');
@@ -38,10 +40,10 @@ router.post('/login', async (req, res) => {
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) return res.status(400).send('invalid name or password');
 
-  const token = jwt.sign({ _id: user._id }, process.env.SECRET);
+  const token = jwt.sign({ _id: user._id, name, password }, process.env.SECRET);
 
   try {
-    await res.header('authToken', token).send(token);
+    await res.header('authToken', token).send({ token, user: { name } });
   } catch (error) {
     res.status(400).send(error);
   }
