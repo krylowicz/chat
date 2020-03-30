@@ -1,11 +1,11 @@
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, { pingTimeout: 60000 });
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const router = require('./routes/router');
 const cors = require('cors');
+const router = require('./routes/router');
 const authRoute = require('./routes/auth');
 
 dotenv.config();
@@ -20,6 +20,11 @@ mongoose.connect(
 
 io.on('connect', socket => {
   console.log('connected sockets', socket.id);
+
+  socket.on('sendMessage', (message, callback) => {
+    console.log(`message: ${message}`);
+    callback();
+  });
 
   socket.on('disconnect', () => {
     console.log('user has left');

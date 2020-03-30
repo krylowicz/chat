@@ -8,6 +8,8 @@ const UserContextProvider = ({ children }) => {
   const [user, setUser] = useState(undefined);
   const history = useHistory();
 
+  const doUpdateUser = () => setUser(true);
+
   const handleAuth = async (authType, name, password) => {
     const response = await fetch(`${process.env.REACT_APP_BASE_URL}/${authType}`, {
       method: 'POST',
@@ -18,12 +20,11 @@ const UserContextProvider = ({ children }) => {
     if (error) {
       return error;
     } else {
+      doUpdateUser();
       localStorage.setItem('token', token);
       history.push('/');
     }
   };
-
-  const doUpdateToken = () => setUser(undefined);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -31,7 +32,7 @@ const UserContextProvider = ({ children }) => {
   }, [user]);
 
   return(
-    <UserContext.Provider value={{ user, doUpdateToken, handleAuth }}>
+    <UserContext.Provider value={{ user, doUpdateUser, handleAuth }}>
       {children}
     </UserContext.Provider>
   );
