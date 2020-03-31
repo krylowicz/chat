@@ -16,10 +16,12 @@ const Chat = () => {
   const handleKeyPress = e => {
     e.preventDefault();
     if (message) {
-      socket.current.emit('sendMessage', message, () => setMessage(''));
+      socket.current.emit('sendMessage', user._id, message, () => setMessage(''));
     }
   };
-  console.log(loading, user);
+
+  console.log(user);
+
   return !loading && user ? (
     <>
       <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleKeyPress(e) : null} />

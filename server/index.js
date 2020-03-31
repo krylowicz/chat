@@ -22,9 +22,10 @@ mongoose.connect(
 io.on('connect', socket => {
   console.log('connected sockets', socket.id);
 
-  socket.on('sendMessage', (name, message, callback) => {
+  socket.on('sendMessage', async (_id, message, callback) => {
     console.log(`message: ${message}`);
-    // new Message({ _id:  author: name, content: message })
+    const newMessage = new Message({ author: _id, content: message });
+    await newMessage.save();
 
     callback();
   });
