@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const router = require('./routes/router');
 const authRoute = require('./routes/auth');
+const messagesRoute = require('./routes/messages');
 const Message = require('./models/message');
 
 dotenv.config();
@@ -41,5 +42,6 @@ app.use(cors({
 app.use(express.json());
 app.use(router);
 app.use('/api/auth', authRoute);
+app.use('/api/messages', messagesRoute);
 
 server.listen(PORT, () => console.log(`🚀 server is running on http://localhost:${PORT}`));

@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useHistory } from "react-router-dom";
 import PropTypes from 'prop-types';
+import io from 'socket.io-client';
 
 const UserContext = createContext(null);
 
 const UserContextProvider = ({ children }) => {
   const [user, setUser] = useState(undefined);
   const history = useHistory();
+  const [socket, setSocket] = useState(undefined);
 
   const handleAuth = async (authType, name, password) => {
     const response = await fetch(`${process.env.REACT_APP_BASE_URL}/${authType}`, {
@@ -25,6 +27,10 @@ const UserContextProvider = ({ children }) => {
   };
 
   const doUpdateUser = () => setUser(undefined);
+
+  useEffect(() => {
+    if (!socket) setSocket(io('http://localhost:5000'));
+  }, [socket]);
 
   useEffect( () => {
     (async () => {
@@ -48,7 +54,7 @@ const UserContextProvider = ({ children }) => {
   }, [user]);
 
   return(
-    <UserContext.Provider value={{ user, doUpdateUser, handleAuth }}>
+    <UserContext.Provider value={{ user, doUpdateUser, handleAuth, socket }}>
       {children}
     </UserContext.Provider>
   );

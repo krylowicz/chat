@@ -1,26 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuthorization } from 'context/userContext';
+import React, { useState, useContext } from 'react';
+import UserContext, { useAuthorization } from 'context/userContext';
 import LogoutButton from 'components/LogoutButton/LogoutButton';
-import io from 'socket.io-client';
 
 const Chat = () => {
-  const socket = useRef(null);
+  const { socket } = useContext(UserContext);
   const { user, loading, doUpdateUser } = useAuthorization(user => user);
   const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    socket.current = io('http://localhost:5000');
-  });
+  const [messages, setMessages] = useState([]);
 
   const handleMessageChange = e => setMessage(e.target.value);
   const handleKeyPress = e => {
     e.preventDefault();
     if (message) {
-      socket.current.emit('sendMessage', user._id, message, () => setMessage(''));
+      socket.emit('sendMessage', user._id, message, () => setMessage(''));
     }
   };
 
-  console.log(user);
+  const getMessages = async () => {
+    const response = await fetch(`${process.env.REACT_APP_BASE_URL}/getMessages`);
+    const { test } = await response.json();
+    console.log(test);
+  };
 
   return !loading && user ? (
     <>
