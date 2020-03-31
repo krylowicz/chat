@@ -8,27 +8,43 @@ const UserContextProvider = ({ children }) => {
   const [user, setUser] = useState(undefined);
   const history = useHistory();
 
-  const doUpdateUser = () => setUser(true);
-
   const handleAuth = async (authType, name, password) => {
     const response = await fetch(`${process.env.REACT_APP_BASE_URL}/${authType}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, password }),
     });
-    const { token, error } = await response.json();
+    const { user, token, error } = await response.json();
     if (error) {
-      return error;
+      console.error(error);
     } else {
-      doUpdateUser();
+      setUser(user);
       localStorage.setItem('token', token);
       history.push('/');
     }
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) setUser(null);
+  const doUpdateUser = () => setUser(undefined);
+
+  useEffect( () => {
+    (async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setUser(null)
+      } else if (user === undefined) {
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/whoami`, {
+          method: 'GET',
+          headers: { 'authToken': token }
+        });
+        const { user, error } = await response.json();
+        if (error) {
+          console.error(error);
+        } else {
+          setUser(user);
+        }
+      }
+    })();
   }, [user]);
 
   return(
@@ -43,7 +59,7 @@ UserContextProvider.propTypes = {
 };
 
 const useAuthorization = condition => {
-  const { user } = useContext(UserContext);
+  const { user, doUpdateUser } = useContext(UserContext);
   const history = useHistory();
 
   useEffect(() => {
@@ -54,7 +70,7 @@ const useAuthorization = condition => {
     }
   }, [user, condition, history]);
 
-  return { user, loading: user === undefined, error: user === null };
+  return { user, loading: user === undefined, error: user === null, doUpdateUser };
 };
 
 useAuthorization.propTypes = {

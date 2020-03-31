@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const router = require('./routes/router');
 const authRoute = require('./routes/auth');
+const Message = require('./models/message');
 
 dotenv.config();
 
@@ -21,8 +22,10 @@ mongoose.connect(
 io.on('connect', socket => {
   console.log('connected sockets', socket.id);
 
-  socket.on('sendMessage', (message, callback) => {
+  socket.on('sendMessage', (name, message, callback) => {
     console.log(`message: ${message}`);
+    // new Message({ _id:  author: name, content: message })
+
     callback();
   });
 

@@ -1,7 +1,7 @@
 const router = require('express').Router();
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 const authValidation = require('../validation');
 
 router.post('/register', async (req, res) => {
@@ -41,6 +41,25 @@ router.post('/login', async (req, res) => {
   if (!validPassword) return res.status(400).send('invalid name or password');
 
   const token = jwt.sign({ _id: user._id, name, password }, process.env.SECRET);
+
+  try {
+    await res.header('authToken', token).send({ token, user: { name } });
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+router.get('/whoami', async (req, res) => {
+  const token = req.header('authToken');
+  if (!token) return res.status(400).send('Invalid token');
+
+  const { name, password } = await jwt.verify(token, process.env.SECRET);
+
+  const user = await User.findOne({ name });
+  if (!user) return res.status(400).send('invalid name or password');
+
+  const validPassword = await bcrypt.compare(password, user.password);
+  if (!validPassword) return res.status(400).send('invalid name or password');
 
   try {
     await res.header('authToken', token).send({ token, user: { name } });
