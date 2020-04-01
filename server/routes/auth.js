@@ -1,10 +1,10 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
 const authValidation = require('../validation');
 
 router.post('/register', async (req, res) => {
+  const { User } = req.models;
   const { name, password } = req.body;
 
   const { error } = authValidation(req.body);
@@ -29,6 +29,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
+  const { User } = req.models;
   const { name, password } = req.body;
 
   const { error } = authValidation(req.body);
@@ -50,6 +51,8 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/whoami', async (req, res) => {
+  const { User } = req.models;
+
   const token = req.header('authToken');
   if (!token) return res.status(400).send('Invalid token');
 
@@ -62,7 +65,7 @@ router.get('/whoami', async (req, res) => {
   if (!validPassword) return res.status(400).send('invalid name or password');
 
   try {
-    await res.header('authToken', token).send({ token, user: { name } });
+    await res.header('authToken', token).send({ token, user: { _id: user._id, name } });
   } catch (error) {
     res.status(400).send(error);
   }

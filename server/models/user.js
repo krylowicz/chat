@@ -11,6 +11,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
     minLength: 8
+  },
+  friends: {
+    type: [mongoose.Schema.Types.ObjectID],
+    ref: 'User'
   }
 });
 
