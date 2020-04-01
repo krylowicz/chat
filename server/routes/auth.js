@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
 
   try {
     await user.save();
-    await res.header('authToken', token).send({ token, user: { name } });
+    await res.header('authToken', token).send({ token, user: { _id: user._id, name } });
   } catch (error) {
     await res.status(400).send(error);
   }
@@ -51,21 +51,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/whoami', async (req, res) => {
-  const { User } = req.models;
-
-  const token = req.header('authToken');
-  if (!token) return res.status(400).send('Invalid token');
-
-  const { name, password } = await jwt.verify(token, process.env.SECRET);
-
-  const user = await User.findOne({ name });
-  if (!user) return res.status(400).send('invalid name or password');
-
-  const validPassword = await bcrypt.compare(password, user.password);
-  if (!validPassword) return res.status(400).send('invalid name or password');
-
+  if (!req.user) return res.status(400).send('user is not logged');
   try {
-    await res.header('authToken', token).send({ token, user: { _id: user._id, name } });
+    await res.send({ user: req.user });
   } catch (error) {
     res.status(400).send(error);
   }

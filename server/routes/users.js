@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
 const router = require('express').Router();
 
 router.get('/getUsers', async (req, res) => {
+  if (!req.user) return res.status(400).send('user is not logged');
   const { User } = req.models;
 
   try {
@@ -22,12 +22,9 @@ router.get('/getUsers', async (req, res) => {
 });
 
 router.get('/getFriends', async (req, res) => {
+  if (!req.user) return res.status(400).send('user is not logged');
   const { User } = req.models;
-
-  const token = req.header('authToken');
-  if (!token) return res.status(400).send('Invalid token');
-
-  const { _id } = await jwt.verify(token, process.env.SECRET);
+  const { _id } = req.user;
 
   try {
     res.status(200).send(await User.findById(_id).select('friends'));
@@ -41,9 +38,14 @@ router.post('/addFriend', async (req, res) => {
   const { userID, friendID } = req.body;
 
   try {
-    await User.updateOne({ _id: userID }, { $push: { friends: friendID }});
-    await User.updateOne({ _id: friendID }, { $push: { friends: userID }});
-    await res.status(200).send(await User.findOne({ _id: userID }));
+    const { friends } = await User.findById(userID).select('friends');
+
+    if (!friends.includes(friendID)) {
+      await User.updateOne({ _id: userID }, { $push: { friends: friendID } });
+      await User.updateOne({ _id: friendID }, { $push: { friends: userID } });
+    }
+    const { _id, name } = await User.findOne({ _id: userID });
+    await res.status(200).send({ user: { _id, name } });
   } catch (error) {
     console.log(error);
   }

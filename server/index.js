@@ -5,6 +5,8 @@ const io = require('socket.io')(server, { pingTimeout: 60000 });
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('./models/user');
 const Message = require('./models/message');
 const Conversation = require('./models/conversation');
@@ -45,8 +47,23 @@ app.use(cors({
   origin: '*'
 }));
 app.use(express.json());
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   req.models = { User, Message, Conversation };
+
+  req.token = req.header('authToken');
+  if (req.token) {
+    const { name, password } = await jwt.verify(req.token, process.env.SECRET);
+
+    const user = await User.findOne({ name });
+    if (!user) return res.status(400).send('invalid name or password');
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).send('invalid name or password');
+
+    req.currentUser = user;
+    req.user = { _id: user._id, name: user.name, friends: user.friends };
+  }
+
   next();
 });
 app.use(router);
