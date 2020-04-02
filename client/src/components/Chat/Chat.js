@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import UserContext, { useAuthorization } from 'context/userContext';
+import { getUsers } from 'utils/apiMethods';
 import LogoutButton from 'components/LogoutButton/LogoutButton';
 
 const Chat = () => {
@@ -7,7 +8,6 @@ const Chat = () => {
   const { user, loading, doUpdateUser } = useAuthorization(user => user);
   const [message, setMessage] = useState('');
   const [users, setUsers] = useState(undefined);
-  const [friends, setFriends] = useState(undefined);
 
   const handleMessageChange = e => setMessage(e.target.value);
   const handleKeyPress = e => {
@@ -16,23 +16,9 @@ const Chat = () => {
       socket.emit('sendMessage', user._id, message, () => setMessage(''));
     }
   };
-
-  const getUsers = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/users/getUsers`, {
-        headers: { 'authToken': localStorage.getItem('token')}
-      });
-      const { users } = await response.json();
-      return users;
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleAddFriend = async () => {
+  const handleAddFriend = async friendID => {
     try {
       const userID = user._id;
-      const friendID = '5e84a35a89c52d73f49f9fb6';
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/users/addFriend`, {
         method: 'POST',
         headers: {
@@ -41,22 +27,7 @@ const Chat = () => {
         },
         body: JSON.stringify({ userID, friendID })
       });
-      const json = await response.json();
-      console.log(json.user);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const getFriends = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/users/getFriends`, {
-        method: 'GET',
-        headers: { 'authToken': token }
-      });
-      const { friends } = await response.json();
-      setFriends(friends);
+      return await response.json();
     } catch (error) {
       console.error(error);
     }
@@ -82,7 +53,7 @@ const Chat = () => {
         <ul key={user._id}>
           <li>
             {user.name}
-            <button type="submit" onClick={handleAddFriend}>add to friend</button>
+            <button type="submit" onClick={() => handleAddFriend(user._id)}>add to friend</button>
           </li>
         </ul>
       )) : <p>loading</p>}
