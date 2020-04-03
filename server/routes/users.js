@@ -3,6 +3,8 @@ const router = require('express').Router();
 router.get('/getUsers', async (req, res) => {
   if (!req.user) return res.status(400).send('user is not logged');
   const { User } = req.models;
+  // const { _id } = req.currentUser;
+  const { name } = req.currentUser;
 
   try {
     let users = await User.find();
@@ -14,6 +16,14 @@ router.get('/getUsers', async (req, res) => {
         name: friend.name
       }})
     }});
+
+    // const currentUser = users.find(user => user._id === _id));
+    const currentUser = users.find(user => user.name === name);
+    let index;
+    for (let i = 0; i < users.length; i++) {
+      if (users[i] === currentUser) index = i;
+    }
+    users.splice(index, 1);
 
     await res.status(200).send({ users })
   } catch (error) {
