@@ -1,9 +1,14 @@
 const router = require('express').Router();
-const Message = require('../models/message');
-const Conversation = require('../models/conversation');
 
-router.get('/getMessages', (req, res) => {
-  res.send('get messages');
+router.get('/getMessages', async (req, res) => {
+  const { Message } = req.models;
+
+  try {
+    const messages = await Message.find();
+    await res.status(200).send({ messages });
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 module.exports = router;

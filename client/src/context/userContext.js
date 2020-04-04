@@ -11,7 +11,7 @@ const UserContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(undefined);
 
   const handleAuth = async (authType, name, password) => {
-    const response = await fetch(`${process.env.REACT_APP_BASE_URL}/${authType}`, {
+    const response = await fetch(`${process.env.REACT_APP_BASE_URL}/auth/${authType}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, password }),
@@ -20,7 +20,7 @@ const UserContextProvider = ({ children }) => {
     if (error) {
       console.error(error);
     } else {
-      setUser(user);
+      setUser({...user});
       localStorage.setItem('token', token);
       history.push('/');
     }
@@ -39,7 +39,7 @@ const UserContextProvider = ({ children }) => {
       if (!token) {
         setUser(null)
       } else if (user === undefined) {
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/whoami`, {
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/auth/whoami`, {
           method: 'GET',
           headers: { 'authToken': token }
         });
@@ -53,7 +53,7 @@ const UserContextProvider = ({ children }) => {
     })();
   }, [user]);
 
-  return(
+  return (
     <UserContext.Provider value={{ user, doUpdateUser, handleAuth, socket }}>
       {children}
     </UserContext.Provider>
