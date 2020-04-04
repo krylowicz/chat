@@ -9,8 +9,6 @@ const Chat = () => {
   const [message, setMessage] = useState('');
   const [users, setUsers] = useState(undefined);
   const [friends, setFriends] = useState(undefined);
-  let currentUserID;
-  if (user) currentUserID = user._id;
 
   const handleMessageChange = e => setMessage(e.target.value);
   const handleKeyPress = e => {
@@ -20,21 +18,9 @@ const Chat = () => {
     }
   };
   const handleAddFriend = async friendID => {
-    try {
-      const userID = user._id;
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/users/addFriend`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'authToken': localStorage.getItem('token')
-        },
-        body: JSON.stringify({ userID, friendID })
-      });
-      return await response.json();
-    } catch (error) {
-      console.error(error);
-    }
+    socket.emit('addFriend', localStorage.getItem('token'), friendID, (friends) => setFriends(friends));
   };
+
   const handleRemoveFriend = async friendID => {
     try {
       await fetch(`${process.env.REACT_APP_BASE_URL}/users/removeFriend`, {
@@ -85,14 +71,10 @@ const Chat = () => {
   return !loading && user ? (
     <>
       <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleKeyPress(e) : null} />
-      {users ? users.map(user => {
-        const commonFriends = user.friends.map(({ _id }) => _id);
-
-        return (
+      {users ? users.map(user => (
           <ul key={user._id}>
             <li>{user.name}</li>
-            {commonFriends.includes(currentUserID) ? (
-              //currentUser.friends.findIndex(friend => friend._id === user._id) zwraca -1 check
+            {friends.includes(user._id) ? (
               <>
                 <button type="submit" onClick={() => handleRemoveFriend(user._id)}>remove friend</button>
                 <button type="submit" onClick={() => createConversation(user._id)}>create conversation</button>
@@ -102,7 +84,7 @@ const Chat = () => {
             )}
           </ul>
         )
-      }) : null}
+      ) : null}
       <LogoutButton updateFn={doUpdateUser} />
     </>
   ) : null;

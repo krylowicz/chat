@@ -25,8 +25,35 @@ mongoose.connect(
   () => console.log('connected to database')
 );
 
-io.on('connect', socket => {
-  console.log('connected sockets', socket.id);
+io.on('connect', async socket => {
+  // const models = { User, Message, Conversation };
+
+  const authorize = async token => {
+    const { name, password } = await jwt.verify(token, process.env.SECRET);
+
+    const user = await User.findOne({ name });
+    if (!user) throw new Error;
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) throw new Error;
+
+    return { _id: user._id, name: user.name, friends: user.friends };
+  };
+
+  socket.on('addFriend', async (token, friendID, callback) => {
+    try {
+      const user = await authorize(token);
+      const { friends } = await User.findById(user._id).select('friends');
+
+      if (!friends.includes(friendID)) {
+        await User.updateOne({ _id: user._id }, { $push: { friends: friendID } });
+        await User.updateOne({ _id: friendID }, { $push: { friends: user._id } });
+      }
+      callback((await User.findById(user._id).select('friends')).friends);
+    } catch (error) {
+      console.error(error);
+    }
+  });
 
   // socket.on('sendMessage', async (_id, message, callback) => {
   //   try {
@@ -37,7 +64,6 @@ io.on('connect', socket => {
   //   }
   //   callback();
   // });
-
   socket.on('disconnect', () => {
     console.log('user has left');
   })
