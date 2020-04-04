@@ -24,4 +24,20 @@ const getFriends = async () => {
   }
 };
 
-export { getUsers, getFriends };
+const createConversation = async (currentUserID, userID) => {
+  const token = localStorage.getItem('token');
+  try {
+    await fetch(`${process.env.REACT_APP_BASE_URL}/messages/createConversation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authToken': token
+      },
+      body: JSON.stringify({ currentUserID, userID })
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export { getUsers, getFriends, createConversation };

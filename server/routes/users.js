@@ -3,8 +3,6 @@ const router = require('express').Router();
 router.get('/getUsers', async (req, res) => {
   if (!req.user) return res.status(400).send('user is not logged');
   const { User } = req.models;
-  // const { _id } = req.currentUser;
-  const { name } = req.currentUser;
 
   try {
     let users = await User.find();
@@ -12,20 +10,12 @@ router.get('/getUsers', async (req, res) => {
       _id: user._id,
       name: user.name,
       friends: user.friends.map(friend => { return {
-        _id: friend.name,
+        _id: friend._id,
         name: friend.name
       }})
     }});
 
-    // const currentUser = users.find(user => user._id === _id));
-    const currentUser = users.find(user => user.name === name);
-    let index;
-    for (let i = 0; i < users.length; i++) {
-      if (users[i] === currentUser) index = i;
-    }
-    users.splice(index, 1);
-
-    await res.status(200).send({ users })
+    await res.status(200).send({ users: users.filter(user => user.name !== req.currentUser.name) })
   } catch (error) {
     console.error(error);
   }
@@ -58,6 +48,21 @@ router.post('/addFriend', async (req, res) => {
     await res.status(200).send({ user: { _id, name } });
   } catch (error) {
     console.log(error);
+  }
+});
+
+router.post('/removeFriend', async (req, res) => {
+  const { User } = req.models;
+  const { _id: userID } = req.user;
+  const { friendID } = req.body;
+
+  try {
+    await User.updateOne({ _id: userID }, { $pull: { friends: friendID } });
+    await User.updateOne({ _id: friendID }, { $pull: { friends: userID } });
+    await res.status(200).send(`removed ${friendID}`);
+  } catch (error) {
+    res.status(400).send(error);
+    console.error(error);
   }
 });
 

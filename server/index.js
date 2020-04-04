@@ -63,7 +63,6 @@ app.use(async (req, res, next) => {
     req.currentUser = user;
     req.user = { _id: user._id, name: user.name, friends: user.friends };
   }
-
   next();
 });
 app.use(router);
