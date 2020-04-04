@@ -12,9 +12,6 @@ const messageSchema = new Schema({
   date: {
     type: Date,
     default: Date.now
-  },
-  conversationID: {
-    type: Number
   }
 });
 

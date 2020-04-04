@@ -33,37 +33,4 @@ router.get('/getFriends', async (req, res) => {
   }
 });
 
-router.post('/addFriend', async (req, res) => {
-  const { User } = req.models;
-  const { userID, friendID } = req.body;
-
-  try {
-    const { friends } = await User.findById(userID).select('friends');
-
-    if (!friends.includes(friendID)) {
-      await User.updateOne({ _id: userID }, { $push: { friends: friendID } });
-      await User.updateOne({ _id: friendID }, { $push: { friends: userID } });
-    }
-    const { _id, name } = await User.findOne({ _id: userID });
-    await res.status(200).send({ user: { _id, name } });
-  } catch (error) {
-    console.log(error);
-  }
-});
-
-router.post('/removeFriend', async (req, res) => {
-  const { User } = req.models;
-  const { _id: userID } = req.user;
-  const { friendID } = req.body;
-
-  try {
-    await User.updateOne({ _id: userID }, { $pull: { friends: friendID } });
-    await User.updateOne({ _id: friendID }, { $pull: { friends: userID } });
-    await res.status(200).send(`removed ${friendID}`);
-  } catch (error) {
-    res.status(400).send(error);
-    console.error(error);
-  }
-});
-
 module.exports = router;

@@ -26,8 +26,6 @@ mongoose.connect(
 );
 
 io.on('connect', async socket => {
-  // const models = { User, Message, Conversation };
-
   const authorize = async token => {
     const { name, password } = await jwt.verify(token, process.env.SECRET);
 
@@ -55,15 +53,40 @@ io.on('connect', async socket => {
     }
   });
 
-  // socket.on('sendMessage', async (_id, message, callback) => {
-  //   try {
-  //     const newMessage = new Message({ author: _id, content: message });
-  //     await newMessage.save();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  //   callback();
-  // });
+  socket.on('removeFriend', async (token, friendID, callback) => {
+    try {
+      const user = await authorize(token);
+      await User.updateOne({ _id: user._id }, { $pull: { friends: friendID } });
+      await User.updateOne({ _id: friendID }, { $pull: { friends: user._id } });
+      callback((await User.findById(user._id).select('friends')).friends)
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  socket.on('createConversation', async (token, userID) => {
+    try {
+      const user = await authorize(token);
+      const conversation = new Conversation({ users: [user._id, userID] });
+      await conversation.save();
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  socket.on('sendMessage', async (token, message, callback) => {
+    const userID = '5e84a35a89c52d73f49f9fb6';
+    try {
+      const user = await authorize(token);
+      const newMessage = new Message({ author: user._id, content: message });
+      const conversation = await Conversation.find({ users: [user._id, userID] });
+      await conversation[0].updateOne({ $push: { messages: newMessage } });
+    } catch (error) {
+      console.log(error);
+    }
+    callback();
+  });
+
   socket.on('disconnect', () => {
     console.log('user has left');
   })
