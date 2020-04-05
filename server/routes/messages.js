@@ -8,6 +8,7 @@ router.get('/getMessages', async (req, res) => {
     await res.status(200).send({ messages });
   } catch (error) {
     console.error(error);
+    await res.status(400).send({ error });
   }
 });
 

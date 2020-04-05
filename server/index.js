@@ -64,18 +64,33 @@ io.on('connect', async socket => {
     }
   });
 
-  socket.on('createConversation', async (token, userID) => {
+  socket.on('createConversation', async (token, userID, callback) => {
     try {
       const user = await authorize(token);
-      const conversation = new Conversation({ users: [user._id, userID] });
-      await conversation.save();
+      const conversation = await Conversation.find({ users: [user._id, userID] });
+
+      if(conversation.length === 0) {
+        const newConversation = new Conversation({ users: [user._id, userID] });
+        await newConversation.save();
+      }
     } catch (error) {
       console.error(error);
     }
+    callback();
   });
 
-  socket.on('sendMessage', async (token, message, callback) => {
-    const userID = '5e84a35a89c52d73f49f9fb6';
+  socket.on('getConversationMessages', async (token, userID, callback) => {
+    let conversation;
+    try {
+      const user = await authorize(token);
+      conversation = await Conversation.find({ users: [user._id, userID] });
+    } catch (error) {
+      console.error(error);
+    }
+    callback(conversation[0].messages);
+  });
+
+  socket.on('sendMessage', async (token, userID, message, callback) => {
     try {
       const user = await authorize(token);
       const newMessage = new Message({ author: user._id, content: message });
