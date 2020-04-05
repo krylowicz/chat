@@ -51,11 +51,11 @@ const Chat = () => {
       socket.emit('sendMessage', localStorage.getItem('token'), friendID, message, () => setMessage(''));
     }
   };
-  const handleCreateConversation = async (userID) => {
-    socket.emit('createConversation', localStorage.getItem('token'), userID, (userID) => setFriendID(userID));
-  };
-  const handleGetConversationMessages = async (userID) => {
+  const handleGetConversationMessages = async userID => {
     socket.emit('getConversationMessages', localStorage.getItem('token'), userID, (messages) => setMessages(messages));
+  };
+  const handleGetUseConversation = async () => {
+    socket.emit('getUserConversations', localStorage.getItem('token'));
   };
 
   useEffect(() => {
@@ -83,7 +83,6 @@ const Chat = () => {
             {friends.includes(user._id) ? (
               <>
                 <button type="submit" onClick={() => handleRemoveFriend(user._id)}>remove friend</button>
-                <button type="submit" onClick={() => handleCreateConversation(user._id)}>create conversation</button>
                 <button type="submit" onClick={() => handleGetConversationMessages(user._id)}>get conversation</button>
               </>
             ) : (

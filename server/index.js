@@ -42,10 +42,16 @@ io.on('connect', async socket => {
     try {
       const user = await authorize(token);
       const { friends } = await User.findById(user._id).select('friends');
+      const conversation = await Conversation.find({ users: [user._id, friendID] });
 
       if (!friends.includes(friendID)) {
         await User.updateOne({ _id: user._id }, { $push: { friends: friendID } });
         await User.updateOne({ _id: friendID }, { $push: { friends: user._id } });
+      }
+
+      if (conversation.length === 0) {
+        const newConversation = new Conversation({ users: [user._id, friendID] });
+        await newConversation.save();
       }
       callback((await User.findById(user._id).select('friends')).friends);
     } catch (error) {
@@ -64,26 +70,20 @@ io.on('connect', async socket => {
     }
   });
 
-  socket.on('createConversation', async (token, userID, callback) => {
+  socket.on('getUserConversations', async(token) => {
     try {
       const user = await authorize(token);
-      const conversation = await Conversation.find({ users: [user._id, userID] });
-
-      if(conversation.length === 0) {
-        const newConversation = new Conversation({ users: [user._id, userID] });
-        await newConversation.save();
-      }
+      const conversation = await Conversation.find({ users: { $in: [user._id] } });
     } catch (error) {
       console.error(error);
     }
-    callback();
   });
 
   socket.on('getConversationMessages', async (token, userID, callback) => {
     let conversation;
     try {
       const user = await authorize(token);
-      conversation = await Conversation.find({ users: [user._id, userID] });
+      conversation = await Conversation.find({ users: { $in: [user._id, userID] } });
     } catch (error) {
       console.error(error);
     }
@@ -94,7 +94,7 @@ io.on('connect', async socket => {
     try {
       const user = await authorize(token);
       const newMessage = new Message({ author: user._id, content: message });
-      const conversation = await Conversation.find({ users: [user._id, userID] });
+      const conversation = await Conversation.find({ users: { $in: [user._id, userID] } });
       await conversation[0].updateOne({ $push: { messages: newMessage } });
     } catch (error) {
       console.log(error);
