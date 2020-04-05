@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import UserContext, { useAuthorization } from 'context/userContext';
 import LogoutButton from 'components/LogoutButton/LogoutButton';
+import Messages from '../Messages/Messages';
 
 const getUsers = async () => {
   try {
@@ -74,6 +75,7 @@ const Chat = () => {
 
   return !loading && user ? (
     <>
+      <Messages messages={messages} />
       <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
       {users ? users.map(user => (
           <ul key={user._id}>
