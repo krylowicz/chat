@@ -12,10 +12,10 @@ const userSchema = new Schema({
     required: true,
     minLength: 8
   },
-  friends: {
-    type: [mongoose.Schema.Types.ObjectID],
+  friends: [{
+    type: mongoose.Schema.Types.ObjectID,
     ref: 'User'
-  }
+  }]
 });
 
 module.exports = mongoose.model('User', userSchema);

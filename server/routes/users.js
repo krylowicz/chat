@@ -21,15 +21,20 @@ router.get('/getUsers', async (req, res) => {
   }
 });
 
-router.get('/getFriends', async (req, res) => {
+router.post('/getUsersWithSearch', async (req, res) => {
   if (!req.user) return res.status(400).send('user is not logged');
   const { User } = req.models;
-  const { _id } = req.user;
+  const { search } = req.body;
 
   try {
-    res.status(200).send(await User.findById(_id).select('friends'));
+    const users = (await User.find({ name: { $regex: search, $options: 'gui' } })).map(user => { return {
+      _id: user._id,
+      name: user.name,
+      friends: user.friends.map(friend => friend._id)
+    }});
+    await res.status(200).send({ users });
   } catch (error) {
-    console.log(error);
+    console.error(error)
   }
 });
 

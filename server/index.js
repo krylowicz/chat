@@ -30,10 +30,10 @@ io.on('connect', async socket => {
     const { name, password } = await jwt.verify(token, process.env.SECRET);
 
     const user = await User.findOne({ name });
-    if (!user) throw new Error;
+    if (!user) throw new Error('user or password are not valid');
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) throw new Error;
+    if (!validPassword) throw new Error('user or password are not valid');
 
     return { _id: user._id, name: user.name, friends: user.friends };
   };
@@ -70,32 +70,34 @@ io.on('connect', async socket => {
     }
   });
 
-  socket.on('getUserConversations', async(token) => {
+  socket.on('getUserConversations', async(token, callback) => {
+    let conversations;
     try {
       const user = await authorize(token);
-      const conversation = await Conversation.find({ users: { $in: [user._id] } });
+      conversations = await Conversation.find({ users: { $in: [user._id] } }).populate('users');
     } catch (error) {
       console.error(error);
     }
+    callback(conversations);
   });
 
   socket.on('getConversationMessages', async (token, userID, callback) => {
     let conversation;
     try {
       const user = await authorize(token);
-      conversation = await Conversation.find({ users: { $in: [user._id, userID] } });
+      conversation = await Conversation.findOne({ users: { $all: [user._id, userID] } });
     } catch (error) {
       console.error(error);
     }
-    callback(conversation[0].messages);
+    callback(conversation.messages);
   });
 
   socket.on('sendMessage', async (token, userID, message, callback) => {
     try {
       const user = await authorize(token);
       const newMessage = new Message({ author: user._id, content: message });
-      const conversation = await Conversation.find({ users: { $in: [user._id, userID] } });
-      await conversation[0].updateOne({ $push: { messages: newMessage } });
+      const conversation = await Conversation.findOneAndUpdate({ users: { $all: [user._id, userID] } }, { $push : { messages: newMessage }});
+      io.to(conversation._id).emit('newMessage', newMessage);
     } catch (error) {
       console.log(error);
     }

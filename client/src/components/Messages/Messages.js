@@ -5,6 +5,8 @@ import styled from 'styled-components';
 const StyledWrapper = styled.div`
   background: pink;
   padding: 10px;
+  max-height: 500px;
+  overflow: scroll;
 `;
 
 const Messages = ({ messages }) => (
