@@ -30,10 +30,10 @@ io.on('connect', async socket => {
     const { name, password } = await jwt.verify(token, process.env.SECRET);
 
     const user = await User.findOne({ name });
-    if (!user) throw new Error;
+    if (!user) throw new Error('user or password are not valid');
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) throw new Error;
+    if (!validPassword) throw new Error('user or password are not valid');
 
     return { _id: user._id, name: user.name, friends: user.friends };
   };
@@ -42,10 +42,16 @@ io.on('connect', async socket => {
     try {
       const user = await authorize(token);
       const { friends } = await User.findById(user._id).select('friends');
+      const conversation = await Conversation.find({ users: [user._id, friendID] });
 
       if (!friends.includes(friendID)) {
         await User.updateOne({ _id: user._id }, { $push: { friends: friendID } });
         await User.updateOne({ _id: friendID }, { $push: { friends: user._id } });
+      }
+
+      if (conversation.length === 0) {
+        const newConversation = new Conversation({ users: [user._id, friendID] });
+        await newConversation.save();
       }
       callback((await User.findById(user._id).select('friends')).friends);
     } catch (error) {
@@ -64,23 +70,34 @@ io.on('connect', async socket => {
     }
   });
 
-  socket.on('createConversation', async (token, userID) => {
+  socket.on('getUserConversations', async(token, callback) => {
+    let conversations;
     try {
       const user = await authorize(token);
-      const conversation = new Conversation({ users: [user._id, userID] });
-      await conversation.save();
+      conversations = await Conversation.find({ users: { $in: [user._id] } }).populate('users');
     } catch (error) {
       console.error(error);
     }
+    callback(conversations);
   });
 
-  socket.on('sendMessage', async (token, message, callback) => {
-    const userID = '5e84a35a89c52d73f49f9fb6';
+  socket.on('getConversationMessages', async (token, userID, callback) => {
+    let conversation;
+    try {
+      const user = await authorize(token);
+      conversation = await Conversation.findOne({ users: { $all: [user._id, userID] } });
+    } catch (error) {
+      console.error(error);
+    }
+    callback(conversation.messages);
+  });
+
+  socket.on('sendMessage', async (token, userID, message, callback) => {
     try {
       const user = await authorize(token);
       const newMessage = new Message({ author: user._id, content: message });
-      const conversation = await Conversation.find({ users: [user._id, userID] });
-      await conversation[0].updateOne({ $push: { messages: newMessage } });
+      const conversation = await Conversation.findOneAndUpdate({ users: { $all: [user._id, userID] } }, { $push : { messages: newMessage }});
+      io.to(conversation._id).emit('newMessage', newMessage);
     } catch (error) {
       console.log(error);
     }
