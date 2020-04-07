@@ -64,6 +64,7 @@ io.on('connect', async socket => {
       const user = await authorize(token);
       await User.updateOne({ _id: user._id }, { $pull: { friends: friendID } });
       await User.updateOne({ _id: friendID }, { $pull: { friends: user._id } });
+
       callback((await User.findById(user._id).select('friends')).friends)
     } catch (error) {
       console.error(error);
@@ -75,33 +76,37 @@ io.on('connect', async socket => {
     try {
       const user = await authorize(token);
       conversations = await Conversation.find({ users: { $in: [user._id] } }).populate('users');
+
+      for (const conversation of conversations) {
+        socket.join(conversation._id);
+      }
     } catch (error) {
       console.error(error);
     }
     callback(conversations);
   });
 
-  socket.on('getConversationMessages', async (token, userID, callback) => {
-    let conversation;
-    try {
-      const user = await authorize(token);
-      conversation = await Conversation.findOne({ users: { $all: [user._id, userID] } });
-    } catch (error) {
-      console.error(error);
-    }
-    callback(conversation.messages);
-  });
-
-  socket.on('sendMessage', async (token, userID, message, callback) => {
+  socket.on('sendMessage', async (token, conversationID, message, callback) => {
     try {
       const user = await authorize(token);
       const newMessage = new Message({ author: user._id, content: message });
-      const conversation = await Conversation.findOneAndUpdate({ users: { $all: [user._id, userID] } }, { $push : { messages: newMessage }});
-      io.to(conversation._id).emit('newMessage', newMessage);
+      await newMessage.save();
+      await Conversation.updateOne({ _id: conversationID }, { $push: { messages: newMessage } });
+
+      io.to(conversationID).emit('newMessage', await Message.populate(newMessage, { path: 'author', select: 'name' }));
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
     callback();
+  });
+
+  socket.on('getConversationMessages', async (token, conversationID) => {
+    try {
+      const user = await authorize(token);
+      const conversation = await Conversation.findOne({ _id: conversationID }).populate({ path: 'messages', populate: { path: 'author', select: 'name' } });
+    } catch (error) {
+      console.error(error);
+    }
   });
 
   socket.on('disconnect', () => {

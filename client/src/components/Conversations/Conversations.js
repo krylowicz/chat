@@ -47,7 +47,7 @@ const Conversations = ({ user, socket, setConversationID }) => {
     socket.emit('removeFriend', localStorage.getItem('token'), friendID, (friends) => setFriends(friends));
   };
   const handleGetUserConversation = async () => {
-    socket.emit('getUserConversations', localStorage.getItem('token'), (conversation) => setUserConversations(conversation));
+    socket.emit('getUserConversations', localStorage.getItem('token'), (conversations) => setUserConversations(conversations));
   };
   const handleSearchChange = e => setSearch(e.target.value);
   const handleSetUsers = async () => setUsers(await getUsers(search));
@@ -87,7 +87,9 @@ const Conversations = ({ user, socket, setConversationID }) => {
         <>
           {userConversations ? userConversations.map(conversation => (
             <ul key={conversation._id}>
-              <li>{conversation.users.map(otherUser => user._id !== otherUser._id ? otherUser.name : false).filter(name => name).join(', ')}</li>
+              <li onClick={() => setConversationID(conversation._id)}>
+                {conversation.users.map(otherUser => user._id !== otherUser._id ? otherUser.name : false).filter(name => name).join(', ')}
+              </li>
             </ul>
           )) : null}
         </>
@@ -100,6 +102,7 @@ export default Conversations;
 
 Conversations.propTypes = {
   user: PropTypes.object.isRequired,
-  socket: PropTypes.object.isRequired
+  socket: PropTypes.object.isRequired,
+  setConversationID: PropTypes.func.isRequired
 };
 

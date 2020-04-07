@@ -12,10 +12,12 @@ const StyledWrapper = styled.div`
 const Messages = ({ messages }) => (
   <StyledWrapper>
     {messages ? messages.map(message => {
+      const date = new Date(message.date);
       return (
         <div key={message._id}>
-          <p>{message.author}</p>
+          <p>{message.author.name}</p>
           <p>{message.content}</p>
+          <p>{date.getHours()}:{date.getMinutes()}</p>
         </div>
       )
     }) : null}
