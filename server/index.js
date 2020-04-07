@@ -102,8 +102,13 @@ io.on('connect', async socket => {
 
   socket.on('getConversationMessages', async (token, conversationID) => {
     try {
-      const user = await authorize(token);
-      const conversation = await Conversation.findOne({ _id: conversationID }).populate({ path: 'messages', populate: { path: 'author', select: 'name' } });
+      await authorize(token);
+      const { messages } = await Conversation.findOne({ _id: conversationID })
+        // .sort('-date')
+        // .limit(10)
+        .populate({ path: 'messages', populate: { path: 'author', select: 'name' } });
+
+      io.to(conversationID).emit('conversationMessages', messages.slice(-10));
     } catch (error) {
       console.error(error);
     }

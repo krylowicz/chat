@@ -28,7 +28,6 @@ const Chat = () => {
   useEffect(() => {
     if (socket) {
       socket.on('newMessage', message => setMessages(prevState => [...prevState, message]));
-      // socket.on('newMessage', message => console.log(message));
       return () => socket.removeAllListeners('newMessage');
     }
   }, [socket]);
@@ -37,7 +36,7 @@ const Chat = () => {
     <>
       <Messages messages={messages} />
       <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
-      <Conversations user={user} socket={socket} setConversationID={setConversationID} />
+      <Conversations user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} />
       <LogoutButton updateFn={doUpdateUser} />
     </>
   ) : null;

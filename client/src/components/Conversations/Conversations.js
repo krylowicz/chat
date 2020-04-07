@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 // const getFriends = async () => {
@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 //   }
 // };
 
-const Conversations = ({ user, socket, setConversationID }) => {
+const Conversations = ({ user, socket, setConversationID, setMessages }) => {
   const [search, setSearch] = useState('');
   const [searchedValue, setSearchedValue] = useState('');
   const [users, setUsers] = useState(undefined);
@@ -41,23 +41,29 @@ const Conversations = ({ user, socket, setConversationID }) => {
   };
 
   const handleAddFriend = async friendID => {
-    socket.emit('addFriend', localStorage.getItem('token'), friendID, (friends) => setFriends(friends));
+    socket.emit('addFriend', localStorage.getItem('token'), friendID, friends => setFriends(friends));
   };
   const handleRemoveFriend = async friendID => {
-    socket.emit('removeFriend', localStorage.getItem('token'), friendID, (friends) => setFriends(friends));
+    socket.emit('removeFriend', localStorage.getItem('token'), friendID, friends => setFriends(friends));
   };
-  const handleGetUserConversation = async () => {
-    socket.emit('getUserConversations', localStorage.getItem('token'), (conversations) => setUserConversations(conversations));
+  const handleGetUserConversation = useCallback(async () => {
+    socket.emit('getUserConversations', localStorage.getItem('token'), conversations => setUserConversations(conversations));
+  }, [socket]);
+  const handleGetConversationMessags = (conversationID) => {
+    socket.emit('getConversationMessages', localStorage.getItem('token'), conversationID);
+    socket.on('conversationMessages', messages => {
+      setMessages(messages);
+    });
   };
   const handleSearchChange = e => setSearch(e.target.value);
-  const handleSetUsers = async () => setUsers(await getUsers(search));
+  const handleSetUsers = useCallback(async () => setUsers(await getUsers(search)), [search]);
 
   useEffect(() => {
     if (search && searchedValue !== search) {
       const interval = setInterval(handleSetUsers, 500);
       return () => clearInterval(interval);
     }
-  }, [search, searchedValue]);
+  }, [search, searchedValue, handleSetUsers]);
 
   useEffect(() => {
     (async () => {
@@ -65,7 +71,7 @@ const Conversations = ({ user, socket, setConversationID }) => {
         setUserConversations(await handleGetUserConversation());
       }
     })()
-  }, [userConversations]);
+  }, [userConversations, socket, handleGetUserConversation]);
 
   return (
     <>
@@ -87,7 +93,10 @@ const Conversations = ({ user, socket, setConversationID }) => {
         <>
           {userConversations ? userConversations.map(conversation => (
             <ul key={conversation._id}>
-              <li onClick={() => setConversationID(conversation._id)}>
+              <li onClick={() => {
+                setConversationID(conversation._id);
+                handleGetConversationMessags(conversation._id);
+              }}>
                 {conversation.users.map(otherUser => user._id !== otherUser._id ? otherUser.name : false).filter(name => name).join(', ')}
               </li>
             </ul>

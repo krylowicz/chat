@@ -1,12 +1,18 @@
 import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
 import UserContext from "context/userContext";
+import Form from 'components/Form/Form';
+import FormItem from 'components/FormItem/FormItem';
+import Button from 'components/Button/Button';
 
-const StyledForm = styled.form``;
-
-const StyledInput = styled.input``;
-
-const StyledButton = styled.button``;
+const StyledWrapper = styled.div`
+  background: ${({ theme }) => theme.color.primary};
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 const Login = () => {
   const { handleAuth } = useContext(UserContext);
@@ -25,12 +31,14 @@ const Login = () => {
   };
 
   return (
-    <StyledForm onSubmit={handleSubmit}>
-      <StyledInput type="text" name="name" placeholder="name" onChange={handleNameChange} />
-      <StyledInput type="password" name="password" placeholder="password" onChange={handlePasswordChange} />
-      <StyledButton type="submit">login</StyledButton>
+    <StyledWrapper>
+      <Form>
+        <FormItem id="name" type="text" onChange={handleNameChange} />
+        <FormItem id="password" type="password" onChange={handlePasswordChange} />
+        <Button onClick={handleSubmit}>login</Button>
+      </Form>
       { error ? <p>{error}</p> : null }
-    </StyledForm>
+    </StyledWrapper>
   )
 };
 
