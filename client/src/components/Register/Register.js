@@ -1,12 +1,18 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import UserContext from "context/userContext";
+import Form from 'components/Form/Form';
+import FormItem from 'components/FormItem/FormItem';
+import Button from 'components/Button/Button';
 
-const StyledForm = styled.form``;
-
-const StyledInput = styled.input``;
-
-const StyledButton = styled.button``;
+const StyledWrapper = styled.div`
+  background: ${({ theme }) => theme.color.primary};
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
 const Register = () => {
   const { handleAuth } = useContext(UserContext);
@@ -25,12 +31,14 @@ const Register = () => {
   };
 
   return (
-    <StyledForm onSubmit={handleFormSubmit}>
-      <StyledInput type="text" name="name" placeholder="name" onChange={handleNameChange} />
-      <StyledInput type="password" name="password" placeholder="password" onChange={handlePasswordChange} />
-      <StyledButton type="submit">register</StyledButton>
-      { error ? <p>{error}</p> : null }
-    </StyledForm>
+    <StyledWrapper>
+      <Form>
+        <FormItem type="text" id="name" onChange={handleNameChange} />
+        <FormItem type="password" id="password" onChange={handlePasswordChange} />
+        <Button onClick={handleFormSubmit}>register</Button>
+        { error ? <p>{error}</p> : null }
+      </Form>
+    </StyledWrapper>
   )
 };
 
