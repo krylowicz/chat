@@ -14,6 +14,21 @@ const StyledWrapper = styled.div`
   align-items: center;
 `;
 
+const StyledGithubLink = styled.a`
+  color: ${({ theme }) => theme.color.paragraph};
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  font-size: 1.2rem;
+  text-decoration: none;
+`;
+
+const StyledError = styled.p`
+  font-size: 1.4rem;
+  color: ${({ theme }) => theme.color.light };
+  margin: 0.5rem auto 0 auto;
+`;
+
 const Register = () => {
   const { handleAuth } = useContext(UserContext);
   const [name, setName] = useState('');
@@ -24,10 +39,7 @@ const Register = () => {
   const handlePasswordChange = e => setPassword(e.target.value);
   const handleFormSubmit = async e => {
     e.preventDefault();
-    const error = await handleAuth('register', name, password);
-    if (error) {
-      setError(error);
-    }
+    await handleAuth('register', name, password, setError);
   };
 
   return (
@@ -36,7 +48,8 @@ const Register = () => {
         <FormItem type="text" id="name" onChange={handleNameChange} />
         <FormItem type="password" id="password" onChange={handlePasswordChange} />
         <Button onClick={handleFormSubmit}>register</Button>
-        { error ? <p>{error}</p> : null }
+        { error ? <StyledError>{error}</StyledError> : null }
+        <StyledGithubLink target="_blank" href="https://github.com/krylowicz/chat">github</StyledGithubLink>
       </Form>
     </StyledWrapper>
   )

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import UserContext, { useAuthorization } from 'context/userContext';
 import LogoutButton from 'components/LogoutButton/LogoutButton';
 import Messages from 'components/Messages/Messages';
-import Conversations from 'components/Conversations/Conversations';
+import Users from 'components/Users/Users';
 
 const Chat = () => {
   const { socket } = useContext(UserContext);
@@ -36,7 +36,7 @@ const Chat = () => {
     <>
       <Messages messages={messages} />
       <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
-      <Conversations user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} />
+      <Users user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} />
       <LogoutButton updateFn={doUpdateUser} />
     </>
   ) : null;

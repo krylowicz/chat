@@ -10,7 +10,7 @@ const UserContextProvider = ({ children }) => {
   const history = useHistory();
   const [socket, setSocket] = useState(undefined);
 
-  const handleAuth = async (authType, name, password) => {
+  const handleAuth = async (authType, name, password, callback) => {
     const response = await fetch(`${process.env.REACT_APP_BASE_URL}/auth/${authType}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -18,7 +18,7 @@ const UserContextProvider = ({ children }) => {
     });
     const { user, token, error } = await response.json();
     if (error) {
-      console.error(error);
+      callback(error);
     } else {
       setUser({...user});
       localStorage.setItem('token', token);
@@ -61,7 +61,7 @@ const UserContextProvider = ({ children }) => {
 };
 
 UserContextProvider.propTypes = {
-  children: PropTypes.object.isRequired,
+  children: PropTypes.array.isRequired,
 };
 
 const useAuthorization = condition => {

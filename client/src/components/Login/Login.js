@@ -32,6 +32,12 @@ const StyledGithubLink = styled.a`
   text-decoration: none;
 `;
 
+const StyledError = styled.p`
+  font-size: 1.4rem;
+  color: ${({ theme }) => theme.color.light };
+  margin: 0.5rem auto 0 auto;
+`;
+
 const Login = () => {
   const { handleAuth } = useContext(UserContext);
   const [name, setName] = useState('');
@@ -42,10 +48,7 @@ const Login = () => {
   const handlePasswordChange = e => setPassword(e.target.value);
   const handleFormSubmit = async e => {
     e.preventDefault();
-    const error = await handleAuth('login', name, password);
-    if (error) {
-      setError(error);
-    }
+    await handleAuth('login', name, password, setError);
   };
 
   return (
@@ -55,8 +58,8 @@ const Login = () => {
         <FormItem id="password" type="password" onChange={handlePasswordChange} />
         <Button onClick={handleFormSubmit}>login</Button>
         <StyledLink to="/register">dont have an account? click here</StyledLink>
+        { error ? <StyledError>{error}</StyledError> : null }
       </Form>
-      { error ? <p>{error}</p> : null }
       <StyledGithubLink target="_blank" href="https://github.com/krylowicz/chat">github</StyledGithubLink>
     </StyledWrapper>
   )

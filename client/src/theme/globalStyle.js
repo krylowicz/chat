@@ -1,8 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 
-const GlobalStyle = createGlobalStyle`
-   @import url("https://use.typekit.net/zei8qhj.css");
-   
+const GlobalStyle = createGlobalStyle` 
    *, *::before, *::after {
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;

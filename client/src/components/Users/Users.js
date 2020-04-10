@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 //   }
 // };
 
-const Conversations = ({ user, socket, setConversationID, setMessages }) => {
+const Users = ({ user, socket, setConversationID, setMessages }) => {
   const [search, setSearch] = useState('');
   const [searchedValue, setSearchedValue] = useState('');
   const [users, setUsers] = useState(undefined);
@@ -72,7 +72,6 @@ const Conversations = ({ user, socket, setConversationID, setMessages }) => {
       }
     })()
   }, [userConversations, socket, handleGetUserConversation]);
-
   return (
     <>
       <input placeholder="search" onChange={handleSearchChange} />
@@ -107,11 +106,10 @@ const Conversations = ({ user, socket, setConversationID, setMessages }) => {
   );
 };
 
-export default Conversations;
+export default Users;
 
-Conversations.propTypes = {
+Users.propTypes = {
   user: PropTypes.object.isRequired,
   socket: PropTypes.object.isRequired,
   setConversationID: PropTypes.func.isRequired
 };
-

@@ -11,7 +11,7 @@ router.post('/register', async (req, res) => {
   if (error) return res.status(400).send({ error: error.details[0].message });
 
   const nameExist = await User.findOne({ name });
-  if (nameExist) return res.status(400).send('name is arleady in use');
+  if (nameExist) return res.status(400).send({ error: 'name is arleady in use' });
 
   const salt = await bcrypt.genSalt(10);
   const hashedPasword = await bcrypt.hash(password, salt);
@@ -36,10 +36,10 @@ router.post('/login', async (req, res) => {
   if (error) return res.status(400).send({ error: error.details[0].message });
 
   const user = await User.findOne({ name });
-  if (!user) return res.status(400).send('invalid name or password');
+  if (!user) return res.status(400).send({ error: 'invalid name or password' });
 
   const validPassword = await bcrypt.compare(password, user.password);
-  if (!validPassword) return res.status(400).send('invalid name or password');
+  if (!validPassword) return res.status(400).send({ error: 'invalid name or password' });
 
   const token = jwt.sign({ _id: user._id, name, password }, process.env.SECRET);
 
