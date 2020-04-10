@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
+import styled from 'styled-components';
 import UserContext, { useAuthorization } from 'context/userContext';
 import LogoutButton from 'components/LogoutButton/LogoutButton';
 import Messages from 'components/Messages/Messages';
 import Users from 'components/Users/Users';
+
+const StyledWrapper = styled.div`
+  background: ${({ theme }) => theme.color.primary};
+  color: ${({ theme }) => theme.color.light};
+  width: 100vw;
+  height: 100vh;
+`;
 
 const Chat = () => {
   const { socket } = useContext(UserContext);
@@ -33,12 +41,12 @@ const Chat = () => {
   }, [socket]);
 
   return !loading && user && socket ? (
-    <>
+    <StyledWrapper>
       <Messages messages={messages} />
       <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
       <Users user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} />
       <LogoutButton updateFn={doUpdateUser} />
-    </>
+    </StyledWrapper>
   ) : null;
 };
 

@@ -1,28 +1,36 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import Message from './Message';
 
 const StyledWrapper = styled.div`
-  background: pink;
   padding: 10px;
   max-height: 500px;
-  overflow: scroll;
+  overflow: auto;
 `;
 
-const Messages = ({ messages }) => (
-  <StyledWrapper>
-    {messages ? messages.map(message => {
-      const date = new Date(message.date);
-      return (
-        <div key={message._id}>
-          <p>{message.author.name}</p>
-          <p>{message.content}</p>
-          <p>{date.getHours()}:{date.getMinutes()}</p>
-        </div>
-      )
-    }) : null}
-  </StyledWrapper>
-);
+const StyledMessage = styled.div``;
+
+const Messages = ({ messages }) => {
+  return (
+    <StyledWrapper>
+      {messages ? messages.map(message => {
+        const author = message.author.name;
+        const { content } = message;
+        const rawDate = new Date(message.date);
+        const date = `${rawDate.getHours()}:${rawDate.getMinutes()}`;
+        return (
+          <Message key={message._id} author={author} content={content} date={date} />
+          // <StyledMessage key={message._id}>
+          //   <p>{message.author.name}</p>
+          //   <p>{message.content}</p>
+          //   <p>{date.getHours()}:{date.getMinutes()}</p>
+          // </StyledMessage>
+        )
+      }) : null}
+    </StyledWrapper>
+  )
+};
 
 export default Messages;
 

@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import styled from 'styled-components';
 import PropTypes from 'prop-types';
+
+const Wrapper = styled.div`
+  font-size: 1.4rem;
+`;
 
 // const getFriends = async () => {
 //   const token = localStorage.getItem('token');
@@ -73,7 +78,7 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
     })()
   }, [userConversations, socket, handleGetUserConversation]);
   return (
-    <>
+    <Wrapper>
       <input placeholder="search" onChange={handleSearchChange} />
       {search ? (
         <>
@@ -102,7 +107,7 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
           )) : null}
         </>
       )}
-    </>
+    </Wrapper>
   );
 };
 
