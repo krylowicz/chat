@@ -2,8 +2,37 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
-const Wrapper = styled.div`
-  font-size: 1.4rem;
+const StyledWrapper = styled.div`
+  font-size: 1.8rem;
+  width: 30%;
+  padding: 1rem;
+  border-right: 0.005rem solid ${({ theme }) => theme.color.light};
+`;
+
+const StyledSearch = styled.input`
+  font-size: 1.8rem;
+  width: 100%;
+  background: none;
+  border: 0;
+  margin-bottom: 1.2rem;
+  color: ${({ theme }) => theme.color.light};
+  border-bottom: 0.2rem solid ${({ theme }) => theme.color.secondary};
+  
+  &::placeholder {
+    color: inherit;
+  }
+`;
+
+const StyledList = styled.ul`
+  list-style: none;
+  width: 100%;
+  margin: 1.2rem 0;
+  padding-left: 2rem;
+  font-size: 2rem;
+  
+  li {
+    cursor: pointer;  
+  }
 `;
 
 // const getFriends = async () => {
@@ -77,37 +106,38 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
       }
     })()
   }, [userConversations, socket, handleGetUserConversation]);
+
   return (
-    <Wrapper>
-      <input placeholder="search" onChange={handleSearchChange} />
+    <StyledWrapper>
+      <StyledSearch placeholder="search" onChange={handleSearchChange} />
       {search ? (
         <>
           {users ? users.map(otherUser => (
-            <ul key={otherUser._id}>
+            <StyledList key={otherUser._id}>
               <li>{otherUser.name}</li>
               {otherUser.friends.includes(user._id) ? (
                 <button type="submit" onClick={() => handleRemoveFriend(otherUser._id)}>remove friend</button>
               ) : (
                 <button type="submit" onClick={() => handleAddFriend(otherUser._id)}>add to friend</button>
               )}
-            </ul>
+            </StyledList>
           )) : null}
         </>
       ) : (
         <>
           {userConversations ? userConversations.map(conversation => (
-            <ul key={conversation._id}>
+            <StyledList key={conversation._id}>
               <li onClick={() => {
                 setConversationID(conversation._id);
                 handleGetConversationMessags(conversation._id);
               }}>
                 {conversation.users.map(otherUser => user._id !== otherUser._id ? otherUser.name : false).filter(name => name).join(', ')}
               </li>
-            </ul>
+            </StyledList>
           )) : null}
         </>
       )}
-    </Wrapper>
+    </StyledWrapper>
   );
 };
 
@@ -116,5 +146,6 @@ export default Users;
 Users.propTypes = {
   user: PropTypes.object.isRequired,
   socket: PropTypes.object.isRequired,
-  setConversationID: PropTypes.func.isRequired
+  setConversationID: PropTypes.func.isRequired,
+  setMessages: PropTypes.func.isRequired
 };

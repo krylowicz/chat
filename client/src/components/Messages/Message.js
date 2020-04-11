@@ -4,12 +4,14 @@ import PropTypes from 'prop-types';
 import UserContext from 'context/userContext';
 
 const StyledWrapper = styled.div`
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   display: flex;
   flex-direction: row;
 `;
 
 const StyledMessageWrapper = styled.div`
+  max-width: 30rem;
+  word-wrap: break-spaces;
   width: auto;
   position: relative;
   display: flex;
@@ -18,14 +20,17 @@ const StyledMessageWrapper = styled.div`
   color: ${({ light, theme }) => light ? theme.color.primary: theme.color.primary};
   justify-content: ${({ light }) => light ? 'flex-end' : 'flex-start'};
   margin: ${({ light }) => light ? '2rem 0 2rem auto' : '2rem 0'};
-  text-align: ${({ light }) => light ? 'right' : 'left'};
+  //text-align: ${({ light }) => light ? 'right' : 'left'};
+  text-align: left;
   align-items: flex-end;
-  padding: 0.4rem;
+  padding: 0.6rem 0.8rem;
   border-radius: 0.8rem;
 `;
 
-const StyledDetail = styled.p`
+const StyledHour = styled.p`
   margin: 0;
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.color.primary};
 `;
 
 const StyledContent = styled.p`
@@ -42,15 +47,13 @@ const StyledAuthor = styled.p`
 
 const Message = ({ author, content, date }) => {
   const { user } = useContext(UserContext);
-  let isSentByCurrentUser = false;
 
-  if (user.name === author) isSentByCurrentUser = true;
-  return isSentByCurrentUser ? (
+  return user.name === author ? (
     <StyledWrapper>
       <StyledMessageWrapper light>
         <StyledAuthor>{author}</StyledAuthor>
         <StyledContent>{content}</StyledContent>
-        <StyledDetail>{date}</StyledDetail>
+        <StyledHour light>{date}</StyledHour>
       </StyledMessageWrapper>
     </StyledWrapper>
   ) : (
@@ -58,7 +61,7 @@ const Message = ({ author, content, date }) => {
       <StyledMessageWrapper>
         <StyledAuthor>{author}</StyledAuthor>
         <StyledContent>{content}</StyledContent>
-        <StyledDetail>{date}</StyledDetail>
+        <StyledHour>{date}</StyledHour>
       </StyledMessageWrapper>
     </StyledWrapper>
   )

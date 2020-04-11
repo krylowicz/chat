@@ -4,30 +4,42 @@ import PropTypes from 'prop-types';
 import Message from './Message';
 
 const StyledWrapper = styled.div`
-  padding: 10px;
-  max-height: 500px;
+  padding: 1rem;
   overflow: auto;
+  width: 70%;
+  position: relative;
 `;
 
-const StyledMessage = styled.div``;
+const StyledInput = styled.input`
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  padding: 1rem;
+  font-size: 2rem;
+  border: 0;
+  background: ${({ theme }) => theme.color.light};
+  color: ${({ theme }) => theme.color.primary};
+  transform: translateX(-1rem);
+  outline: none;
+`;
 
-const Messages = ({ messages }) => {
+const StyledInnerWrapper = styled.div`
+  margin-bottom: 4rem;
+`;
+
+const Messages = ({ messages, onChange, onKeyPress, value }) => {
   return (
     <StyledWrapper>
-      {messages ? messages.map(message => {
-        const author = message.author.name;
-        const { content } = message;
-        const rawDate = new Date(message.date);
-        const date = `${rawDate.getHours()}:${rawDate.getMinutes()}`;
-        return (
-          <Message key={message._id} author={author} content={content} date={date} />
-          // <StyledMessage key={message._id}>
-          //   <p>{message.author.name}</p>
-          //   <p>{message.content}</p>
-          //   <p>{date.getHours()}:{date.getMinutes()}</p>
-          // </StyledMessage>
-        )
-      }) : null}
+      <StyledInnerWrapper>
+        {messages ? messages.map(message => {
+          const author = message.author.name;
+          const { content } = message;
+          const rawDate = new Date(message.date);
+          const date = `${rawDate.getHours()}:${rawDate.getMinutes()}`;
+          return <Message key={message._id} author={author} content={content} date={date} />
+        }) : null}
+      </StyledInnerWrapper>
+      <StyledInput value={value} onChange={onChange} onKeyPress={onKeyPress} />
     </StyledWrapper>
   )
 };
@@ -35,7 +47,10 @@ const Messages = ({ messages }) => {
 export default Messages;
 
 Messages.propTypes = {
-  messages: PropTypes.array
+  messages: PropTypes.array,
+  onChange: PropTypes.func.isRequired,
+  onKeyPress: PropTypes.func.isRequired,
+  value: PropTypes.string.isRequired
 };
 
 Messages.defaultProps = {

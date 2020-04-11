@@ -10,6 +10,8 @@ const StyledWrapper = styled.div`
   color: ${({ theme }) => theme.color.light};
   width: 100vw;
   height: 100vh;
+  display: flex;
+  position: relative;
 `;
 
 const Chat = () => {
@@ -42,9 +44,8 @@ const Chat = () => {
 
   return !loading && user && socket ? (
     <StyledWrapper>
-      <Messages messages={messages} />
-      <input value={message} placeholder="message" onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
       <Users user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} />
+      <Messages messages={messages} value={message} onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
       <LogoutButton updateFn={doUpdateUser} />
     </StyledWrapper>
   ) : null;
