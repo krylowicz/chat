@@ -19,8 +19,7 @@ const StyledMessageWrapper = styled.div`
   background: ${({ light, theme }) => light ? theme.color.light : theme.color.secondary};
   color: ${({ light, theme }) => light ? theme.color.primary: theme.color.primary};
   justify-content: ${({ light }) => light ? 'flex-end' : 'flex-start'};
-  margin: ${({ light }) => light ? '2rem 0 2rem auto' : '2rem 0'};
-  //text-align: ${({ light }) => light ? 'right' : 'left'};
+  margin: ${({ light }) => light ? '2rem 1.2rem 2rem auto' : '2rem 0'};
   text-align: left;
   align-items: flex-end;
   padding: 0.6rem 0.8rem;

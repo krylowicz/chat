@@ -35,6 +35,10 @@ const StyledList = styled.ul`
   }
 `;
 
+const StyledInfo = styled.p`
+  text-align: center;
+`;
+
 // const getFriends = async () => {
 //   const token = localStorage.getItem('token');
 //   try {
@@ -53,6 +57,7 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
   const [search, setSearch] = useState('');
   const [searchedValue, setSearchedValue] = useState('');
   const [users, setUsers] = useState(undefined);
+  // eslint-disable-next-line
   const [friends, setFriends] = useState(undefined);
   const [userConversations, setUserConversations] = useState(undefined);
 
@@ -80,15 +85,19 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
   const handleRemoveFriend = async friendID => {
     socket.emit('removeFriend', localStorage.getItem('token'), friendID, friends => setFriends(friends));
   };
-  const handleGetUserConversation = useCallback(async () => {
-    socket.emit('getUserConversations', localStorage.getItem('token'), conversations => setUserConversations(conversations));
-  }, [socket]);
   const handleGetConversationMessags = (conversationID) => {
     socket.emit('getConversationMessages', localStorage.getItem('token'), conversationID);
     socket.on('conversationMessages', messages => {
       setMessages(messages);
     });
   };
+  const handleGetUserConversation = useCallback(async () => {
+    socket.emit('getUserConversations', localStorage.getItem('token'), conversations => {
+      setUserConversations(conversations);
+      handleGetConversationMessags(conversations[0]._id);
+      setConversationID(conversations[0]._id);
+    });
+  }, [socket, setConversationID]);
   const handleSearchChange = e => setSearch(e.target.value);
   const handleSetUsers = useCallback(async () => setUsers(await getUsers(search)), [search]);
 
@@ -122,6 +131,7 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
               )}
             </StyledList>
           )) : null}
+          {!users ? null : <StyledInfo>couldn't find anyone</StyledInfo>}
         </>
       ) : (
         <>

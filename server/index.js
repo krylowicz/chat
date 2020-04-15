@@ -108,7 +108,7 @@ io.on('connect', async socket => {
         // .limit(10)
         .populate({ path: 'messages', populate: { path: 'author', select: 'name' } });
 
-      io.to(conversationID).emit('conversationMessages', messages.slice(-10));
+      io.to(conversationID).emit('conversationMessages', messages.slice(-16));
     } catch (error) {
       console.error(error);
     }
