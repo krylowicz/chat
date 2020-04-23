@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import UserContext from 'context/userContext';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
@@ -32,6 +33,7 @@ const StyledList = styled.ul`
   
   li {
     cursor: pointer;  
+    font-weight: ${({ theme, active }) => active ? theme.font.bold : theme.font.regular};
   }
 `;
 
@@ -53,13 +55,12 @@ const StyledInfo = styled.p`
 //   }
 // };
 
-const Users = ({ user, socket, setConversationID, setMessages }) => {
+const Users = ({ user, socket, setConversationID, setMessages, conversationID }) => {
   const [search, setSearch] = useState('');
   const [searchedValue, setSearchedValue] = useState('');
   const [users, setUsers] = useState(undefined);
-  // eslint-disable-next-line
-  const [friends, setFriends] = useState(undefined);
   const [userConversations, setUserConversations] = useState(undefined);
+  const { updateFriends } = useContext(UserContext);
 
   const getUsers = async (search) => {
     try {
@@ -73,31 +74,41 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
       });
       setSearchedValue(search);
       const { users } = await response.json();
+      console.log('siema', users);
       return users;
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleAddFriend = async friendID => {
-    socket.emit('addFriend', localStorage.getItem('token'), friendID, friends => setFriends(friends));
-  };
-  const handleRemoveFriend = async friendID => {
-    socket.emit('removeFriend', localStorage.getItem('token'), friendID, friends => setFriends(friends));
-  };
-  const handleGetConversationMessags = (conversationID) => {
-    socket.emit('getConversationMessages', localStorage.getItem('token'), conversationID);
-    socket.on('conversationMessages', messages => {
-      setMessages(messages);
-    });
+  const handleGetConversationMessages = (conversationID) => {
+    socket.emit('getConversationMessages', localStorage.getItem('token'), conversationID, messages => setMessages(messages));
   };
   const handleGetUserConversation = useCallback(async () => {
     socket.emit('getUserConversations', localStorage.getItem('token'), conversations => {
       setUserConversations(conversations);
-      handleGetConversationMessags(conversations[0]._id);
-      setConversationID(conversations[0]._id);
+
+      if (conversations && conversations.length && !conversationID) {
+        handleGetConversationMessages(conversations[0]._id);
+        setConversationID(conversations[0]._id);
+      }
     });
   }, [socket, setConversationID]);
+  const handleAddFriend = friendID => {
+    socket.emit('addFriend', localStorage.getItem('token'), friendID, async (conversationID) => {
+      setConversationID(conversationID);
+      setSearch('');
+      await handleGetUserConversation();
+      setSearchedValue('')
+    });
+  };
+  const handleRemoveFriend = friendID => {
+    socket.emit('removeFriend', localStorage.getItem('token'), friendID, async () => {
+      setSearch('');
+      await handleGetUserConversation();
+      setSearchedValue('')
+    });
+  };
   const handleSearchChange = e => setSearch(e.target.value);
   const handleSetUsers = useCallback(async () => setUsers(await getUsers(search)), [search]);
 
@@ -118,7 +129,7 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
 
   return (
     <StyledWrapper>
-      <StyledSearch placeholder="search" onChange={handleSearchChange} />
+      <StyledSearch value={search} placeholder="search" onChange={handleSearchChange} />
       {search ? (
         <>
           {users ? users.map(otherUser => (
@@ -130,16 +141,15 @@ const Users = ({ user, socket, setConversationID, setMessages }) => {
                 <button type="submit" onClick={() => handleAddFriend(otherUser._id)}>add to friend</button>
               )}
             </StyledList>
-          )) : null}
-          {!users ? null : <StyledInfo>couldn't find anyone</StyledInfo>}
+          )) : <StyledInfo>couldn't find anyone</StyledInfo>}
         </>
       ) : (
         <>
           {userConversations ? userConversations.map(conversation => (
-            <StyledList key={conversation._id}>
+            <StyledList key={conversation._id} active={conversation._id === conversationID}>
               <li onClick={() => {
                 setConversationID(conversation._id);
-                handleGetConversationMessags(conversation._id);
+                handleGetConversationMessages(conversation._id);
               }}>
                 {conversation.users.map(otherUser => user._id !== otherUser._id ? otherUser.name : false).filter(name => name).join(', ')}
               </li>
@@ -157,5 +167,6 @@ Users.propTypes = {
   user: PropTypes.object.isRequired,
   socket: PropTypes.object.isRequired,
   setConversationID: PropTypes.func.isRequired,
-  setMessages: PropTypes.func.isRequired
+  setMessages: PropTypes.func.isRequired,
+  conversationID: PropTypes.string.isRequired
 };

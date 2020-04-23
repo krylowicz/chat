@@ -44,7 +44,7 @@ const Chat = () => {
 
   return !loading && user && socket ? (
     <StyledWrapper>
-      <Users user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} />
+      <Users user={user} socket={socket} setConversationID={setConversationID} setMessages={setMessages} conversationID={conversationID} />
       <Messages messages={messages} value={message} onChange={handleMessageChange} onKeyPress={e => e.key === 'Enter' ? handleSendMessage(e) : null} />
       <LogoutButton updateFn={doUpdateUser} />
     </StyledWrapper>

@@ -59,7 +59,10 @@ const Messages = ({ messages, onChange, onKeyPress, value }) => {
           const author = message.author.name;
           const { content } = message;
           const rawDate = new Date(message.date);
-          const date = `${rawDate.getHours()}:${rawDate.getMinutes()}`;
+          let minutes = rawDate.getMinutes();
+          const hours = rawDate.getHours();
+          if (minutes < 10) minutes = `0${minutes}`;
+          const date = `${hours}:${minutes}`;
           return <Message key={message._id} author={author} content={content} date={date} />
         }) : null}
       </StyledInnerWrapper>

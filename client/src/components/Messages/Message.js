@@ -17,7 +17,7 @@ const StyledMessageWrapper = styled.div`
   display: flex;
   flex-direction: row;
   background: ${({ light, theme }) => light ? theme.color.light : theme.color.secondary};
-  color: ${({ light, theme }) => light ? theme.color.primary: theme.color.primary};
+  color: ${({ theme }) => theme.color.primary};
   justify-content: ${({ light }) => light ? 'flex-end' : 'flex-start'};
   margin: ${({ light }) => light ? '2rem 1.2rem 2rem auto' : '2rem 0'};
   text-align: left;
